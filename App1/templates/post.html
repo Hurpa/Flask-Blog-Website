@@ -1,0 +1,100 @@
+{% include "header.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url('{{post.img_url}}')">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="post-heading">
+            <h1>{{post.id}} - {{post.title}}</h1>
+            <h2 class="subheading">{{post.subtitle}}</h2>
+            <span class="meta">Posted by
+              <a href="#">{{post.author.username}}</a>
+              on
+              <a href="#">{{post.date}}</a>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Post Content -->
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+        {% if messages %}
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            {{ message }}
+          </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      </div>
+    </div>
+
+  <article>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+            {{ post.body | safe }}
+          <hr>
+          {% if is_authorized_user : %}
+          <div class="clearfix">
+            <a class="btn btn-danger float-left" href="{{url_for('delete_post', post_id = post.id)}}">
+              Delete Post
+            </a>
+            <a class="btn btn-primary float-right" href="{{url_for('edit_post', post_id = post.id)}}">
+              Edit Post
+            </a>
+          </div>
+          {% endif %}
+      </div>
+    </div>
+  </article>
+    
+<!--           Comments Area -->
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto">
+       {{ ckeditor.load() }}
+       {{ ckeditor.config(name='body') }}
+       {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+      </div>
+    </div>
+
+    {% if comments %}
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto comment">
+        <ul class="commentList">
+          {% for comment in comments %}
+          <li>
+            <div class="commenterImage">
+              <img src="https://pbs.twimg.com/profile_images/744849215675838464/IH0FNIXk.jpg"/>
+            </div>
+            <span class="date sub-text">{{ comment.author.username }}</span>
+            <div class="commentText">
+              <p>
+                ID : {{ comment.id }} Text : {{ comment.text | safe }}
+                {% if user.role == "admin" and comment.status == "active" %}
+                  <a class="text-danger" href="{{url_for('config_comment', comment_id = comment.id) }}">✘</a>
+                {% elif user.role == "admin" and comment.status == "inactive" %}
+                  <a class="text-primary" href="{{url_for('config_comment', comment_id = comment.id) }}">✓</a>
+                {% endif %}
+              </p>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>  
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  <hr>
+
+{% include "footer.html" %}
